@@ -29,7 +29,7 @@ type GRPCConfig struct {
 
 type ConnectionsConfig struct {
 	ProjServiceConf ProjectServiceConfig `yaml:"projectservice"`
-	TaskServiceConf TaskServiceConfig    `yaml:"taskserivce"`
+	TaskServiceConf TaskServiceConfig    `yaml:"taskservice"`
 }
 
 type ProjectServiceConfig struct {
