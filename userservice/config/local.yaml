@@ -23,6 +23,6 @@ postgres:
   sslmode: disable
 
 logger:
-  level: local
+  level: debug
 
 redis:
