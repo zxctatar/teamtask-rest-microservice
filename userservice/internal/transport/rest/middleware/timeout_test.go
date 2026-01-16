@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TimeoutTest(t *testing.T) {
+func TestTimeout(t *testing.T) {
 	tests := []struct {
 		name   string
 		timeMs time.Duration
@@ -22,23 +22,23 @@ func TimeoutTest(t *testing.T) {
 			name:   "good test",
 			timeMs: 1 * time.Millisecond,
 			status: http.StatusOK,
-			body:   "ok",
+			body:   "\"ok\"",
 		},
 		{
 			name:   "timeout test",
 			timeMs: 3 * time.Millisecond,
 			status: http.StatusRequestTimeout,
-			body:   "timeout",
+			body:   "\"timeout\"",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := gin.New()
-			r.Use(TimeoutMiddleware(tt.timeMs))
+			r.Use(TimeoutMiddleware(2 * time.Millisecond))
 
 			r.GET("/test", func(ctx *gin.Context) {
-				time.Sleep(2 * time.Millisecond)
+				time.Sleep(tt.timeMs)
 				ctx.JSON(http.StatusOK, "ok")
 			})
 
@@ -52,7 +52,7 @@ func TimeoutTest(t *testing.T) {
 			body, err := io.ReadAll(resp.Body)
 			assert.NoError(t, err)
 
-			assert.Equal(t, tt.body, body)
+			assert.Equal(t, tt.body, string(body))
 			assert.Equal(t, tt.status, resp.StatusCode)
 		})
 	}
