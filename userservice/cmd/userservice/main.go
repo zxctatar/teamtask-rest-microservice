@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"syscall"
 	"time"
 	"userservice/internal/config"
+	"userservice/internal/infrastructure/postgres"
 	"userservice/internal/transport/rest"
 	resthandler "userservice/internal/transport/rest/handler"
 	"userservice/internal/transport/rest/middleware"
@@ -16,24 +18,56 @@ import (
 	"userservice/pkg/logger"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq"
 )
 
 func main() {
+	// LOAD CONFIG
 	config := config.MustLoad()
+
+	// SETUP LOGGER
 	log := logger.SetupLogger(config.LogConf.Level)
 
-	regUC := registration.NewRegUC(log)
+	// OPEN SQL CONNECTION
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		config.PostgresConf.Host,
+		config.PostgresConf.Port,
+		config.PostgresConf.User,
+		config.PostgresConf.Password,
+		config.PostgresConf.DbName,
+		config.PostgresConf.Sslmode,
+	)
 
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		panic("failed to open database: " + err.Error())
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		panic("failed to connect to the database: " + err.Error())
+	}
+
+	// CREATE POSTGRES
+	pos := postgres.NewPostgres(log, db)
+
+	// CREATE REGISTRATION USECASE
+	regUC := registration.NewRegUC(log, pos)
+
+	// CREATE HANDLER
 	handl := resthandler.NewRestHandler(log, regUC)
 
+	// GIN SETTINGS
 	gin.SetMode(gin.DebugMode)
 	router := gin.New()
 	router.Use(middleware.TimeoutMiddleware(config.RestConf.RequestTimeout))
 	router.Use(gin.Recovery())
 
+	// REGISTER HTTP ROUTES
 	router.POST("/registration", handl.Registration)
 	router.POST("/login", handl.Login)
 
+	// SERVER SETTING
 	serv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.RestConf.Port),
 		Handler:      router,
