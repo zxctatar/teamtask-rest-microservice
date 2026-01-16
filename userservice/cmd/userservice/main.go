@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// CREATE POSTGRES
-	pos := postgres.NewPostgres(log, db)
+	pos := postgres.NewPostgres(db)
 
 	// CREATE REGISTRATION USECASE
 	regUC := registration.NewRegUC(log, pos)
