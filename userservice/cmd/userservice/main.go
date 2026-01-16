@@ -12,6 +12,7 @@ import (
 	"userservice/internal/transport/rest"
 	resthandler "userservice/internal/transport/rest/handler"
 	"userservice/internal/transport/rest/middleware"
+	"userservice/internal/usecase/implementations/registration"
 	"userservice/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +22,9 @@ func main() {
 	config := config.MustLoad()
 	log := logger.SetupLogger(config.LogConf.Level)
 
-	handl := resthandler.NewRestHandler(log)
+	regUC := registration.NewRegUC(log)
+
+	handl := resthandler.NewRestHandler(log, regUC)
 
 	gin.SetMode(gin.DebugMode)
 	router := gin.New()

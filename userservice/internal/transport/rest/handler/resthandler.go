@@ -5,17 +5,21 @@ import (
 	"net/http"
 	regdto "userservice/internal/transport/rest/handler/dto/registration"
 	handlvalidator "userservice/internal/transport/rest/handler/validator"
+	"userservice/internal/usecase/interfaces"
 
 	"github.com/gin-gonic/gin"
 )
 
 type RestHandler struct {
 	log *slog.Logger
+
+	regUC interfaces.RegistrationUsecase
 }
 
-func NewRestHandler(log *slog.Logger) *RestHandler {
+func NewRestHandler(log *slog.Logger, regUC interfaces.RegistrationUsecase) *RestHandler {
 	return &RestHandler{
-		log: log,
+		log:   log,
+		regUC: regUC,
 	}
 }
 
