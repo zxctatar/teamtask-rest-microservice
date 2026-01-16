@@ -3,19 +3,20 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"log/slog"
+	"errors"
 	userdomain "userservice/internal/domain/user"
+	posmapper "userservice/internal/infrastructure/postgres/mapper"
+	posmodels "userservice/internal/infrastructure/postgres/models"
+	storagerepo "userservice/internal/repository/storage"
 )
 
 type Postgres struct {
-	log *slog.Logger
-	db  *sql.DB
+	db *sql.DB
 }
 
-func NewPostgres(log *slog.Logger, db *sql.DB) *Postgres {
+func NewPostgres(db *sql.DB) *Postgres {
 	return &Postgres{
-		log: log,
-		db:  db,
+		db: db,
 	}
 }
 
@@ -24,5 +25,24 @@ func (p *Postgres) Save(ctx context.Context, ud *userdomain.UserDomain) (uint32,
 }
 
 func (p *Postgres) FindByEmail(ctx context.Context, email string) (*userdomain.UserDomain, error) {
-	panic("not implemented")
+	row := p.db.QueryRowContext(ctx, QueryFindByEmail, email)
+
+	var um posmodels.UserPosModel
+
+	err := row.Scan(
+		&um.Id,
+		&um.FirstName,
+		&um.MiddleName,
+		&um.LastName,
+		&um.HashPassword,
+		&um.Email,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storagerepo.ErrNoRows
+		}
+		return nil, err
+	}
+
+	return posmapper.ModelToDomain(&um), nil
 }
