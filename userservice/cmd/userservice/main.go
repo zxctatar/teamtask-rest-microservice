@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 	"userservice/internal/config"
+	bcrypthash "userservice/internal/infrastructure/bcrypt"
 	"userservice/internal/infrastructure/postgres"
 	"userservice/internal/transport/rest"
 	resthandler "userservice/internal/transport/rest/handler"
@@ -50,9 +51,11 @@ func main() {
 
 	// CREATE POSTGRES
 	pos := postgres.NewPostgres(db)
+	// CREATE HASHER
+	passHasher := bcrypthash.NewBcryptHasher()
 
 	// CREATE REGISTRATION USECASE
-	regUC := registration.NewRegUC(log, pos)
+	regUC := registration.NewRegUC(log, pos, passHasher)
 
 	// CREATE HANDLER
 	handl := resthandler.NewRestHandler(log, regUC)
