@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
-	"userservice/internal/transport/rest/handler/mocks"
+	handlmocks "userservice/internal/transport/rest/handler/mocks"
 	"userservice/internal/transport/rest/middleware"
 	regerr "userservice/internal/usecase/errors/registration"
 	regmodel "userservice/internal/usecase/models/registration"
@@ -18,7 +18,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-//go:generate mockgen -source=./../../../usecase/interfaces/registration.go -destination=mocks/mock_registration.go -package=mocks
+//go:generate mockgen -source=./../../../usecase/interfaces/registration.go -destination=mocks/mock_registration.go -package=handlmocks
 func TestNewRestHandler_Registration(t *testing.T) {
 	tests := []struct {
 		testName   string
@@ -92,7 +92,7 @@ func TestNewRestHandler_Registration(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 
-			regMock := mocks.NewMockRegistrationUsecase(mockCtrl)
+			regMock := handlmocks.NewMockRegistrationUsecase(mockCtrl)
 			if tt.needExpect {
 				regMock.EXPECT().RegUser(gomock.Any(), gomock.Any()).
 					Return(&tt.returnData, tt.returnErr)
