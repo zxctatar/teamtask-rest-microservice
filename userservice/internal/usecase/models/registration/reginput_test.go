@@ -74,21 +74,18 @@ func TestRegInput(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			rIn, err := NewRegInput(
+			rIn := NewRegInput(
 				tt.FirstName,
 				tt.MiddleName,
 				tt.LastName,
 				tt.Password,
 				tt.Email,
 			)
-			assert.ErrorIs(t, err, tt.ExpError)
-			if err == nil {
-				assert.Equal(t, tt.FirstName, rIn.FirstName)
-				assert.Equal(t, tt.MiddleName, rIn.MiddleName)
-				assert.Equal(t, tt.LastName, rIn.LastName)
-				assert.Equal(t, tt.Password, rIn.Password)
-				assert.Equal(t, tt.Email, rIn.Email)
-			}
+			assert.Equal(t, tt.FirstName, rIn.FirstName)
+			assert.Equal(t, tt.MiddleName, rIn.MiddleName)
+			assert.Equal(t, tt.LastName, rIn.LastName)
+			assert.Equal(t, tt.Password, rIn.Password)
+			assert.Equal(t, tt.Email, rIn.Email)
 		})
 	}
 }
