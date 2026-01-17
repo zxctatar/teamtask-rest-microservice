@@ -1,10 +1,13 @@
 package resthandler
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	regdto "userservice/internal/transport/rest/handler/dto/registration"
+	handlmapper "userservice/internal/transport/rest/handler/mapper"
 	handlvalidator "userservice/internal/transport/rest/handler/validator"
+	regerr "userservice/internal/usecase/errors/registration"
 	"userservice/internal/usecase/interfaces"
 
 	"github.com/gin-gonic/gin"
@@ -25,10 +28,14 @@ func NewRestHandler(log *slog.Logger, regUC interfaces.RegistrationUsecase) *Res
 
 func (h *RestHandler) Registration(ctx *gin.Context) {
 	const op = "resthandler.Registration"
+	log := h.log.With(slog.String("op", op))
+
+	log.Info("start registration request")
 
 	var regRequest regdto.RegistrationRequest
 
 	if err := ctx.ShouldBindJSON(&regRequest); err != nil {
+		log.Warn("error with request data", slog.String("error", err.Error()))
 		if errMap, ok := handlvalidator.MapValidationErrors(err); ok {
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"errors": errMap,
@@ -39,6 +46,33 @@ func (h *RestHandler) Registration(ctx *gin.Context) {
 			})
 		}
 		return
+	}
+
+	ri, err := handlmapper.RegRequestToInput(&regRequest)
+	if err != nil {
+		log.Warn("incorrect data", slog.String("error", err.Error()))
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if ro, err := h.regUC.RegUser(ctx.Request.Context(), ri); err != nil {
+		if errors.Is(err, regerr.ErrUserAlreadyExists) {
+			log.Info("user already exists")
+			ctx.JSON(http.StatusConflict, gin.H{
+				"error": err.Error(),
+			})
+		} else {
+			log.Warn("an error occurred while executing the request", slog.String("error", err.Error()))
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": "internal server error",
+			})
+		}
+	} else {
+		log.Info("request completed successfully")
+		rr := handlmapper.RegOutputToResponse(ro)
+		ctx.JSON(http.StatusOK, rr)
 	}
 }
 
