@@ -159,8 +159,8 @@ func mustLoadRedisConfig(cfg *Config) {
 	}
 	db, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
 	cfg.RedisConf.DB = db
-	h, _ := strconv.Atoi(os.Getenv("REDIS_TTL_H"))
-	cfg.RedisConf.TTL = time.Hour * time.Duration(h)
+	h, _ := strconv.Atoi(os.Getenv("REDIS_TTL_SEC"))
+	cfg.RedisConf.TTL = time.Second * time.Duration(h)
 }
 
 func fetchConfigPath() string {
