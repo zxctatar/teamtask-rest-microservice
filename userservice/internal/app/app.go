@@ -8,9 +8,13 @@ import (
 	"userservice/internal/config"
 	bcrypthash "userservice/internal/infrastructure/bcrypt"
 	"userservice/internal/infrastructure/postgres"
+	myredis "userservice/internal/infrastructure/redis"
 	"userservice/internal/transport/rest"
 	resthandler "userservice/internal/transport/rest/handler"
+	"userservice/internal/usecase/implementations/login"
 	"userservice/internal/usecase/implementations/registration"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type App struct {
@@ -18,18 +22,21 @@ type App struct {
 	restServer *rest.RestServer
 	cfg        *config.Config
 	db         *sql.DB
+	client     *redis.Client
 }
 
 func NewApp(cfg *config.Config, log *slog.Logger) *App {
 	db := mustLoadPostgres(cfg)
+	client := mustLoadRedis(cfg)
 
 	pos := postgres.NewPostgres(db)
-
 	hasher := bcrypthash.NewBcryptHasher()
+	redis := myredis.NewRedis(client, &cfg.RestConf.ReadTimeout)
 
 	regUC := registration.NewRegUC(log, pos, hasher)
+	logUC := login.NewLoginUC(log, hasher, redis)
 
-	handl := resthandler.NewRestHandler(log, regUC)
+	handl := resthandler.NewRestHandler(log, regUC, logUC)
 
 	restServer := mustLoadHttpServer(cfg, log, handl)
 
@@ -38,6 +45,7 @@ func NewApp(cfg *config.Config, log *slog.Logger) *App {
 		restServer: restServer,
 		cfg:        cfg,
 		db:         db,
+		client:     client,
 	}
 }
 
@@ -52,4 +60,5 @@ func (a *App) Stop() {
 	a.restServer.Stop(ctx)
 
 	a.db.Close()
+	a.client.Close()
 }
