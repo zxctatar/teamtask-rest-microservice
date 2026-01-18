@@ -1,11 +1,17 @@
 package logmodel
 
 type LoginOutput struct {
-	SessionId string
+	SessionId  string
+	FirstName  string
+	MiddleName string
+	LastName   string
 }
 
-func NewLoginOutput(sessionId string) *LoginOutput {
+func NewLoginOutput(sessionId, firstName, middleName, lastName string) *LoginOutput {
 	return &LoginOutput{
-		SessionId: sessionId,
+		SessionId:  sessionId,
+		FirstName:  firstName,
+		MiddleName: middleName,
+		LastName:   lastName,
 	}
 }
