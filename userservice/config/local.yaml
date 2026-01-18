@@ -25,10 +25,14 @@ postgres:
   port: 5432
   user: app_user
   db_name: users
-  password: app_user_pass
+  #password in .env file
   sslmode: disable
 
 logger:
   level: debug
 
 redis:
+  host: localhost
+  port: 6379
+  #password in .env file
+  db: 0

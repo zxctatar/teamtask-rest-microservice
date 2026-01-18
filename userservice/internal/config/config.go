@@ -11,6 +11,7 @@ import (
 
 var (
 	dockerType = "docker"
+	localType  = "local"
 )
 
 type Config struct {
@@ -57,7 +58,7 @@ type PostgresConfig struct {
 	Port     uint32 `yaml:"port"`
 	User     string `yaml:"user"`
 	DbName   string `yaml:"db_name"`
-	Password string `yaml:"password"`
+	Password string
 	Sslmode  string `yaml:"sslmode"`
 }
 
@@ -66,6 +67,10 @@ type LoggerConfig struct {
 }
 
 type RedisConfig struct {
+	Host     string `yaml:"host"`
+	Port     uint32 `yaml:"port"`
+	Password string
+	DB       int `yaml:"db"`
 }
 
 func MustLoad() Config {
@@ -94,9 +99,24 @@ func MustLoad() Config {
 
 	if config.Type == dockerType {
 		mustLoadPostgresConfig(&config)
+		mustLoadRedisConfig(&config)
 	}
+	loadSecrets(&config)
 
 	return config
+}
+
+func loadSecrets(cfg *Config) {
+	if cfg.Type == localType {
+		cfg.PostgresConf.Password = os.Getenv("DB_USER_PASS")
+		if cfg.PostgresConf.Password == "" {
+			panic("PostgresConfig password field empty")
+		}
+		cfg.RedisConf.Password = os.Getenv("REDIS_PASS")
+		if cfg.RedisConf.Password == "" {
+			panic("RedisConf password field empty")
+		}
+	}
 }
 
 func mustLoadPostgresConfig(cfg *Config) {
@@ -122,6 +142,21 @@ func mustLoadPostgresConfig(cfg *Config) {
 	if cfg.PostgresConf.Sslmode == "" {
 		panic("PostgresConfig sslmode field empty")
 	}
+}
+
+func mustLoadRedisConfig(cfg *Config) {
+	cfg.RedisConf.Host = os.Getenv("REDIS_HOST")
+	if cfg.RedisConf.Host == "" {
+		panic("RedisConf host field empty")
+	}
+	port, _ := strconv.Atoi(os.Getenv("REDIS_PORT"))
+	cfg.RedisConf.Port = uint32(port)
+	cfg.RedisConf.Password = os.Getenv("REDIS_PASS")
+	if cfg.RedisConf.Password == "" {
+		panic("RedisConf password field empty")
+	}
+	db, _ := strconv.Atoi(os.Getenv("REDIS_DB"))
+	cfg.RedisConf.DB = db
 }
 
 func fetchConfigPath() string {
