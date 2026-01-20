@@ -4,16 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"testing"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
 
 const (
 	contentType = "application/json"
-	url         = "http://localhost:44044/registration"
+	urlReg      = "http://localhost:44044/registration"
 )
 
 func TestRegistration_Success_Integration(t *testing.T) {
@@ -28,17 +27,17 @@ func TestRegistration_Success_Integration(t *testing.T) {
 	b, err := json.Marshal(body)
 	require.NoError(t, err)
 
-	resp, err := http.Post(url, contentType, bytes.NewReader(b))
+	resp, err := http.Post(urlReg, contentType, bytes.NewReader(b))
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
-	var reqBody struct {
+	var resBody struct {
 		IsRegistered bool `json:"is_registered"`
 	}
 	expStatusCode := http.StatusOK
 
-	require.NoError(t, json.NewDecoder(resp.Body).Decode(&reqBody))
-	require.True(t, reqBody.IsRegistered)
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&resBody))
+	require.True(t, resBody.IsRegistered)
 	require.Equal(t, expStatusCode, resp.StatusCode)
 }
 
@@ -53,18 +52,18 @@ func TestRegistration_BadRequest_Integration(t *testing.T) {
 	b, err := json.Marshal(body)
 	require.NoError(t, err)
 
-	resp, err := http.Post(url, contentType, bytes.NewReader(b))
+	resp, err := http.Post(urlReg, contentType, bytes.NewReader(b))
 	require.NoError(t, err)
 	defer resp.Body.Close()
 
 	expBody := map[string]string{"FirstName": "field is required"}
 	expStatusCode := http.StatusBadRequest
 
-	var reqBody struct {
+	var resBody struct {
 		Errors map[string]string `json:"errors"`
 	}
-	require.NoError(t, json.NewDecoder(resp.Body).Decode(&reqBody))
-	require.Equal(t, expBody, reqBody.Errors)
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&resBody))
+	require.Equal(t, expBody, resBody.Errors)
 	require.Equal(t, expStatusCode, resp.StatusCode)
 }
 
@@ -80,34 +79,34 @@ func TestRegistration_AlreadyExists_Integration(t *testing.T) {
 	b, err := json.Marshal(body)
 	require.NoError(t, err)
 
-	resp1, err := http.Post(url, contentType, bytes.NewReader(b))
+	resp1, err := http.Post(urlReg, contentType, bytes.NewReader(b))
 	require.NoError(t, err)
 	defer resp1.Body.Close()
 
-	var reqBody1 struct {
+	var resBody1 struct {
 		IsRegistered bool `json:"is_registered"`
 	}
 	expStatusCode := http.StatusOK
 
-	require.NoError(t, json.NewDecoder(resp1.Body).Decode(&reqBody1))
-	require.True(t, reqBody1.IsRegistered)
+	require.NoError(t, json.NewDecoder(resp1.Body).Decode(&resBody1))
+	require.True(t, resBody1.IsRegistered)
 	require.Equal(t, expStatusCode, resp1.StatusCode)
 
-	resp2, err := http.Post(url, contentType, bytes.NewReader(b))
+	resp2, err := http.Post(urlReg, contentType, bytes.NewReader(b))
 	require.NoError(t, err)
 	defer resp2.Body.Close()
 
-	var reqBody2 struct {
+	var resBody2 struct {
 		ExpErr string `json:"error"`
 	}
 	expBody2 := "user already exists"
 	expStatusCode = http.StatusConflict
 
-	require.NoError(t, json.NewDecoder(resp2.Body).Decode(&reqBody2))
-	require.Equal(t, expBody2, reqBody2.ExpErr)
+	require.NoError(t, json.NewDecoder(resp2.Body).Decode(&resBody2))
+	require.Equal(t, expBody2, resBody2.ExpErr)
 	require.Equal(t, expStatusCode, resp2.StatusCode)
 }
 
 func uniqueEmail() string {
-	return "testgmail" + strconv.Itoa(int(time.Now().Unix())) + "@gmail.com"
+	return "testgmail" + uuid.NewString() + "@gmail.com"
 }
