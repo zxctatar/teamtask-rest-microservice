@@ -60,7 +60,7 @@ func (l *LoginUC) Login(ctx context.Context, in *logmodel.LoginInput) (*logmodel
 	if err := l.passHasher.ComparePassword([]byte(ud.HashPassword), []byte(in.Password)); err != nil {
 		if errors.Is(err, hasher.ErrWrongPassword) {
 			log.Info("login stopped: wrong password")
-			return &logmodel.LoginOutput{}, logerr.ErrInvalidPassword
+			return &logmodel.LoginOutput{}, logerr.ErrWrongPassword
 		}
 		log.Warn("login stopped", slog.String("error", err.Error()))
 		return &logmodel.LoginOutput{}, err

@@ -107,8 +107,8 @@ func (h *RestHandler) Login(ctx *gin.Context) {
 				ctx.JSON(http.StatusNotFound, gin.H{
 					"error": err.Error(),
 				})
-			} else if errors.Is(err, logerr.ErrInvalidPassword) {
-				log.Info("invalid password")
+			} else if errors.Is(err, logerr.ErrWrongPassword) {
+				log.Info("wrong password")
 				ctx.JSON(http.StatusUnauthorized, gin.H{
 					"error": err.Error(),
 				})

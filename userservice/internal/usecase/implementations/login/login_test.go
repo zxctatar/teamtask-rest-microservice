@@ -98,7 +98,7 @@ func TestLogin(t *testing.T) {
 			expLoginOutput: &logmodel.LoginOutput{},
 			expLoginErr:    logerr.ErrUserNotFound,
 		}, {
-			testName: "Ivalid password",
+			testName: "Wrong password",
 
 			expFindByEmail:   true,
 			findByEmailInput: "gmail@gmail.com",
@@ -122,7 +122,7 @@ func TestLogin(t *testing.T) {
 
 			loginInput:     logmodel.NewLoginInput("gmail@gmail.com", "pass"),
 			expLoginOutput: &logmodel.LoginOutput{},
-			expLoginErr:    logerr.ErrInvalidPassword,
+			expLoginErr:    logerr.ErrWrongPassword,
 		},
 	}
 

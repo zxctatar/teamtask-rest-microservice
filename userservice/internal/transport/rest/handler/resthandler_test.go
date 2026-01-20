@@ -180,19 +180,19 @@ func TestRestHandler_Login(t *testing.T) {
 			expBody:       []byte(`{"error":"user not found"}`),
 			expStatusCode: 404,
 		}, {
-			testName:  "Invalid password",
+			testName:  "Wrong password",
 			cookieTTL: time.Duration(3600) * time.Second,
 
 			expectLogin:    true,
 			loginOutReturn: &logmodel.LoginOutput{},
-			loginErrReturn: logerr.ErrInvalidPassword,
+			loginErrReturn: logerr.ErrWrongPassword,
 
 			reqBody: []byte(`{
 				"email":"gmail@gmail.com",
 				"password":"somePass"
 			}`),
 
-			expBody:       []byte(`{"error":"invalid password"}`),
+			expBody:       []byte(`{"error":"wrong password"}`),
 			expStatusCode: 401,
 		}, {
 			testName:  "Empty field email",
@@ -200,7 +200,6 @@ func TestRestHandler_Login(t *testing.T) {
 
 			expectLogin:    false,
 			loginOutReturn: &logmodel.LoginOutput{},
-			loginErrReturn: logerr.ErrInvalidPassword,
 
 			reqBody: []byte(`{
 				"password":"somePass"
