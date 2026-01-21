@@ -5,20 +5,12 @@ import (
 	"os/signal"
 	"syscall"
 	"userservice/internal/app"
-	"userservice/internal/config"
-	"userservice/pkg/logger"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	// LOAD CONFIG
-	config := config.MustLoad()
-
-	// SETUP LOGGER
-	log := logger.SetupLogger(config.LogConf.Level)
-
-	app := app.NewApp(&config, log)
+	app := app.NewApp()
 
 	go app.Run()
 

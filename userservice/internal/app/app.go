@@ -14,6 +14,7 @@ import (
 	resthandler "userservice/internal/transport/rest/handler"
 	"userservice/internal/usecase/implementations/login"
 	"userservice/internal/usecase/implementations/registration"
+	"userservice/pkg/logger"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -26,9 +27,12 @@ type App struct {
 	client     *redis.Client
 }
 
-func NewApp(cfg *config.Config, log *slog.Logger) *App {
-	db := mustLoadPostgres(cfg)
-	client := mustLoadRedis(cfg)
+func NewApp() *App {
+	cfg := config.MustLoad()
+	log := logger.SetupLogger(cfg.LogConf.Level)
+
+	db := mustLoadPostgres(&cfg)
+	client := mustLoadRedis(&cfg)
 
 	pos := postgres.NewPostgres(db)
 	hasher := bcrypthash.NewBcryptHasher()
@@ -40,12 +44,12 @@ func NewApp(cfg *config.Config, log *slog.Logger) *App {
 
 	handl := resthandler.NewRestHandler(log, &cfg.RestConf.CookieTTL, regUC, logUC)
 
-	restServer := mustLoadHttpServer(cfg, log, handl)
+	restServer := mustLoadHttpServer(&cfg, log, handl)
 
 	return &App{
 		log:        log,
 		restServer: restServer,
-		cfg:        cfg,
+		cfg:        &cfg,
 		db:         db,
 		client:     client,
 	}
