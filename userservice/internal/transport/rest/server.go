@@ -31,7 +31,7 @@ func (r *RestServer) MustStart() {
 
 func (r *RestServer) Stop(ctx context.Context) {
 	const op = "rest.Stop"
-	r.log.Info("start server shutdown")
+	r.log.Info("start server shutdown", slog.String("op", op))
 	r.serv.Shutdown(ctx)
-	r.log.Info("server stopped")
+	r.log.Info("server stopped", slog.String("op", op))
 }
