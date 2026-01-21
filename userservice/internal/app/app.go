@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"log/slog"
-	"time"
 	"userservice/internal/config"
 	bcrypthash "userservice/internal/infrastructure/bcrypt"
 	"userservice/internal/infrastructure/postgres"
@@ -60,7 +59,7 @@ func (a *App) Run() {
 }
 
 func (a *App) Stop() {
-	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.RestConf.ShutdownTimeout*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), a.cfg.RestConf.ShutdownTimeout)
 	defer cancel()
 
 	a.restServer.Stop(ctx)
