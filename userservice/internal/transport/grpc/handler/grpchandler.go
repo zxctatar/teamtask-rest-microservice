@@ -47,6 +47,8 @@ func (g *GRPCHandler) GetIdBySession(ctx context.Context, req *userservicev1.Get
 		return nil, status.Error(codes.Internal, "internal server error")
 	}
 
+	log.Info("get id by session request completed successfully")
+
 	return &userservicev1.GetIdBySessionResponse{
 		UserId: out.UserId,
 	}, nil
