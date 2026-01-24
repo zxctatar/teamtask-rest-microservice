@@ -8,5 +8,5 @@ RUN go build -o /app/app ./cmd/userservice
 FROM alpine:3 AS runtime
 WORKDIR /app
 COPY --from=build /app/app .
-EXPOSE 44044
+EXPOSE 44044 44045
 ENTRYPOINT [ "./app" ]
