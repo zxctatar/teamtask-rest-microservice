@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"projectservice/internal/config"
+	sessionalidator "projectservice/internal/repository/sessionvalidator"
 	"projectservice/internal/transport/rest"
 	resthandler "projectservice/internal/transport/rest/handler"
 	"projectservice/internal/transport/rest/middleware"
@@ -12,10 +13,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func mustLoadHttpServer(cfg *config.Config, log *slog.Logger) *rest.RestServer {
+func mustLoadHttpServer(cfg *config.Config, log *slog.Logger, sessionValid sessionalidator.SessionValidator) *rest.RestServer {
 	gin.SetMode(cfg.RestConf.Mode)
 	router := gin.New()
 	router.Use(gin.Recovery())
+	router.Use(middleware.GetSessionMiddleware())
+	router.Use(middleware.SessionAuthMiddleware(sessionValid, cfg.ConnectionsConf.UserServConnConf.ResponseTimeout))
 	router.Use(middleware.TimeoutMiddleware(cfg.RestConf.RequestTimeout))
 	handl := resthandler.NewHandler(log)
 
