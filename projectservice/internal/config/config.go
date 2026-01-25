@@ -14,11 +14,12 @@ var (
 )
 
 type Config struct {
-	Type         string         `yaml:"type"`
-	RestConf     RestAPIConfig  `yaml:"restapi"`
-	GrpcConf     GRPCConfig     `yaml:"grpc"`
-	PostgresConf PostgresConfig `yaml:"postgres"`
-	LoggerConf   LoggerConfig   `yaml:"logger"`
+	Type            string            `yaml:"type"`
+	RestConf        RestAPIConfig     `yaml:"restapi"`
+	GrpcConf        GRPCConfig        `yaml:"grpc"`
+	ConnectionsConf ConnectionsConfig `yaml:"connections"`
+	PostgresConf    PostgresConfig    `yaml:"postgres"`
+	LoggerConf      LoggerConfig      `yaml:"logger"`
 }
 
 type RestAPIConfig struct {
@@ -33,6 +34,16 @@ type RestAPIConfig struct {
 type GRPCConfig struct {
 	Port    uint32        `yaml:"port"`
 	Timeout time.Duration `yaml:"timeout"`
+}
+
+type ConnectionsConfig struct {
+	UserServConnConf UserServiceConnectionConfig `yaml:"userservice"`
+}
+
+type UserServiceConnectionConfig struct {
+	Host            string        `yaml:"host"`
+	Port            uint32        `yaml:"port"`
+	ResponseTimeout time.Duration `yaml:"response_timeout"`
 }
 
 type PostgresConfig struct {

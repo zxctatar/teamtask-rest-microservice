@@ -12,6 +12,12 @@ grpc:
   port: 44047
   timeout: 30s
 
+connections:
+  userservice:
+    host: localhost
+    port: 44045
+    response_timeout: 5s
+
 postgres:
   host: localhost
   port: 5432
