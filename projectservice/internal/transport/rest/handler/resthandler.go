@@ -16,14 +16,14 @@ func NewHandler(log *slog.Logger) *RestHandler {
 	}
 }
 
-func (h *RestHandler) CreateProject(ctx *gin.Context) {
+func (h *RestHandler) Create(ctx *gin.Context) {
 	panic("not implemented")
 }
 
-func (h *RestHandler) RemoveProject(ctx *gin.Context) {
+func (h *RestHandler) Delete(ctx *gin.Context) {
 	panic("not implemented")
 }
 
-func (h *RestHandler) GetAllProjects(ctx *gin.Context) {
+func (h *RestHandler) GetAll(ctx *gin.Context) {
 	panic("not implemented")
 }
