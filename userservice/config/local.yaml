@@ -13,14 +13,6 @@ grpc:
   port: 44045
   timeout: 15s
 
-connections:
-  projectservice:
-    port: 44046
-    timeout: 5s
-  taskservice:
-    port: 44047
-    timeout: 5s
-
 postgres:
   host: localhost
   port: 5432

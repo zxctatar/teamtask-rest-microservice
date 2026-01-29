@@ -13,13 +13,5 @@ grpc:
   port: 44045
   timeout: 30s
 
-connections:
-  projectservice:
-    port: 44046
-    timeout: 5s
-  taskservice:
-    port: 44047
-    timeout: 5s
-
 logger:
   level: debug

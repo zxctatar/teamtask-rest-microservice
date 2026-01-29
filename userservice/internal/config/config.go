@@ -15,13 +15,12 @@ var (
 )
 
 type Config struct {
-	Type         string            `yaml:"type"`
-	RestConf     RestAPIConfig     `yaml:"restapi"`
-	GrpcConf     GRPCConfig        `yaml:"grpc"`
-	ConnConf     ConnectionsConfig `yaml:"connections"`
-	PostgresConf PostgresConfig    `yaml:"postgres"`
-	LogConf      LoggerConfig      `yaml:"logger"`
-	RedisConf    RedisConfig       `yaml:"redis"`
+	Type         string         `yaml:"type"`
+	RestConf     RestAPIConfig  `yaml:"restapi"`
+	GrpcConf     GRPCConfig     `yaml:"grpc"`
+	PostgresConf PostgresConfig `yaml:"postgres"`
+	LogConf      LoggerConfig   `yaml:"logger"`
+	RedisConf    RedisConfig    `yaml:"redis"`
 }
 
 type RestAPIConfig struct {
@@ -35,21 +34,6 @@ type RestAPIConfig struct {
 }
 
 type GRPCConfig struct {
-	Port    uint32        `yaml:"port"`
-	Timeout time.Duration `yaml:"timeout"`
-}
-
-type ConnectionsConfig struct {
-	ProjServiceConf ProjectServiceConfig `yaml:"projectservice"`
-	TaskServiceConf TaskServiceConfig    `yaml:"taskservice"`
-}
-
-type ProjectServiceConfig struct {
-	Port    uint32        `yaml:"port"`
-	Timeout time.Duration `yaml:"timeout"`
-}
-
-type TaskServiceConfig struct {
 	Port    uint32        `yaml:"port"`
 	Timeout time.Duration `yaml:"timeout"`
 }
