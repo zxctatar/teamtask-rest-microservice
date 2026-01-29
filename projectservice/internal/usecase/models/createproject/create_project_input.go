@@ -1,11 +1,13 @@
 package createmodel
 
 type CreateProjectInput struct {
-	Name string
+	OwnerId uint32
+	Name    string
 }
 
-func NewCreateProjectInput(name string) *CreateProjectInput {
+func NewCreateProjectInput(ownertId uint32, name string) *CreateProjectInput {
 	return &CreateProjectInput{
-		Name: name,
+		OwnerId: ownertId,
+		Name:    name,
 	}
 }
