@@ -5,8 +5,8 @@ import (
 	createmodel "projectservice/internal/usecase/models/createproject"
 )
 
-func CreateRequestToInput(cr *createdto.CreateRequest) *createmodel.CreateProjectInput {
-	return createmodel.NewCreateProjectInput(cr.Name)
+func CreateRequestToInput(cr *createdto.CreateRequest, userId uint32) *createmodel.CreateProjectInput {
+	return createmodel.NewCreateProjectInput(userId, cr.Name)
 }
 
 func CreateOutputToResponse(co *createmodel.CreateProjectOutput) *createdto.CreateResponse {
