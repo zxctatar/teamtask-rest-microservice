@@ -30,9 +30,16 @@ func NewHandler(log *slog.Logger, createProjUC interfaces.CreateProjectUsecase) 
 func (h *RestHandler) Create(ctx *gin.Context) {
 	const op = "resthandler.Create"
 
-	userId := ctx.GetInt("userId")
+	var userId uint32
+	if val, exists := ctx.Get("userId"); exists {
+		userId = val.(uint32)
+	} else {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "internal server error",
+		})
+	}
 
-	log := h.log.With(slog.String("op", op), slog.Int("userId", userId))
+	log := h.log.With(slog.String("op", op), slog.Int("userId", int(userId)))
 
 	log.Info("start create request")
 
@@ -71,11 +78,12 @@ func (h *RestHandler) Create(ctx *gin.Context) {
 			ctx.JSON(http.StatusConflict, gin.H{
 				"error": err.Error(),
 			})
+		} else {
+			log.Warn("cannot create new project", slog.String("error", err.Error()))
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": "internal server error",
+			})
 		}
-		log.Warn("cannot create new project", slog.String("error", err.Error()))
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "internal server error",
-		})
 		return
 	}
 
