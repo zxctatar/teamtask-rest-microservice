@@ -23,6 +23,15 @@ func NewProjectDomain(ownerId uint32, name string) (*ProjectDomain, error) {
 	}, nil
 }
 
+func RestoreProjectDomain(id, ownerId uint32, name string, createdAt time.Time) *ProjectDomain {
+	return &ProjectDomain{
+		Id:        id,
+		OwnerId:   ownerId,
+		Name:      name,
+		CreatedAt: createdAt,
+	}
+}
+
 func validateOwnerId(ownerId uint32) error {
 	if ownerId == 0 {
 		return ErrInvalidOwnerId
