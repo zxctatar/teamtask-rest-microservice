@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"projectservice/internal/config"
+
+	_ "github.com/lib/pq"
 )
 
 func mustLoadPostgres(cfg *config.Config) *sql.DB {
