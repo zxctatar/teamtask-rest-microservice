@@ -33,18 +33,18 @@ func (c *CreateProjectUC) Execute(ctx context.Context, in *createmodel.CreatePro
 	proj, err := projectdomain.NewProjectDomain(in.OwnerId, in.Name)
 	if err != nil {
 		log.Info("can't create a project", slog.String("error", err.Error()))
-		return &createmodel.CreateProjectOutput{IsCreated: false}, err
+		return createmodel.NewCreateProjectOutput(false), err
 	}
 
 	err = c.stor.Save(ctx, proj)
 	if err != nil {
 		if errors.Is(err, storage.ErrAlreadyExists) {
 			log.Info("project already exists")
-			return &createmodel.CreateProjectOutput{IsCreated: false}, createerr.ErrAlreadyExists
+			return createmodel.NewCreateProjectOutput(false), createerr.ErrAlreadyExists
 		}
 		log.Warn("error save project", slog.String("error", err.Error()))
-		return &createmodel.CreateProjectOutput{IsCreated: false}, err
+		return createmodel.NewCreateProjectOutput(false), err
 	}
 
-	return &createmodel.CreateProjectOutput{IsCreated: true}, nil
+	return createmodel.NewCreateProjectOutput(true), nil
 }
