@@ -11,7 +11,9 @@ import (
 	resthandlmocks "projectservice/internal/transport/rest/handler/mocks"
 	"projectservice/internal/transport/rest/middleware"
 	createerr "projectservice/internal/usecase/error/createproject"
+	deleteerr "projectservice/internal/usecase/error/deleteproject"
 	createmodel "projectservice/internal/usecase/models/createproject"
+	deletemodel "projectservice/internal/usecase/models/deleteproject"
 	"strings"
 	"testing"
 	"time"
@@ -23,6 +25,7 @@ import (
 
 //go:generate mockgen -source=./../../../repository/sessionvalidator/session_validator.go -destination=./mocks/mock_session_validator.go -package=resthandlmocks
 //go:generate mockgen -source=./../../../usecase/interfaces/create_project.go -destination=./mocks/mock_create_project.go -package=resthandlmocks
+//go:generate mockgen -source=./../../../usecase/interfaces/delete_project.go -destination=./mocks/mock_delete_project.go -package=resthandlmocks
 func TestRestHandler_Create(t *testing.T) {
 	tests := []struct {
 		testName string
@@ -121,9 +124,9 @@ func TestRestHandler_Create(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			createUC := resthandlmocks.NewMockCreateProjectUsecase(ctrl)
+			createUCMock := resthandlmocks.NewMockCreateProjectUsecase(ctrl)
 			if tt.expCreate {
-				createUC.EXPECT().Execute(gomock.Any(), tt.createInput).
+				createUCMock.EXPECT().Execute(gomock.Any(), tt.createInput).
 					Return(tt.createOutput, tt.createReturnErr)
 			}
 
@@ -133,7 +136,7 @@ func TestRestHandler_Create(t *testing.T) {
 			client.EXPECT().GetIdBySession(gomock.Any(), tt.sessionId).
 				Return(tt.userId, nil)
 
-			handl := NewHandler(log, createUC, nil)
+			handl := NewHandler(log, createUCMock, nil)
 
 			router := gin.New()
 			router.Use(middleware.GetSessionMiddleware(log))
@@ -161,6 +164,156 @@ func TestRestHandler_Create(t *testing.T) {
 
 			assert.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
 			assert.Equal(t, tt.expResp, respBody.IsCreated)
+			assert.Equal(t, tt.expStatusCode, w.Result().StatusCode)
+		})
+	}
+}
+
+func TestRestHandler_Delete(t *testing.T) {
+	tests := []struct {
+		testName string
+
+		sessionId string
+		userId    uint32
+
+		expDelete         bool
+		deleteUCInput     *deletemodel.DeleteProjectInput
+		deleteUCOutput    *deletemodel.DeleteProjectOutput
+		deleteUCReturnErr error
+
+		clientReturnErr error
+
+		body map[string]string
+
+		expRespBody   bool
+		expStatusCode int
+	}{
+		{
+			testName: "Success",
+
+			sessionId: "sessionId",
+			userId:    1,
+
+			expDelete:         true,
+			deleteUCInput:     deletemodel.NewDeleteProjectInput(1, "Name"),
+			deleteUCOutput:    deletemodel.NewDeleteProjectOutput(true),
+			deleteUCReturnErr: nil,
+
+			clientReturnErr: nil,
+
+			body: map[string]string{
+				"name": "Name",
+			},
+
+			expRespBody:   true,
+			expStatusCode: http.StatusOK,
+		}, {
+			testName: "Missing field name",
+
+			sessionId: "sessionId",
+			userId:    1,
+
+			expDelete:         false,
+			deleteUCInput:     deletemodel.NewDeleteProjectInput(1, "Name"),
+			deleteUCOutput:    deletemodel.NewDeleteProjectOutput(true),
+			deleteUCReturnErr: nil,
+
+			clientReturnErr: nil,
+
+			body: map[string]string{
+				"nam": "Name",
+			},
+
+			expRespBody:   false,
+			expStatusCode: http.StatusBadRequest,
+		}, {
+			testName: "Invalid name",
+
+			sessionId: "sessionId",
+			userId:    1,
+
+			expDelete:         true,
+			deleteUCInput:     deletemodel.NewDeleteProjectInput(1, strings.Repeat("Name", 300)),
+			deleteUCOutput:    deletemodel.NewDeleteProjectOutput(true),
+			deleteUCReturnErr: projectdomain.ErrInvalidName,
+
+			clientReturnErr: nil,
+
+			body: map[string]string{
+				"name": strings.Repeat("Name", 300),
+			},
+
+			expRespBody:   false,
+			expStatusCode: http.StatusBadRequest,
+		}, {
+			testName: "Not found",
+
+			sessionId: "sessionId",
+			userId:    1,
+
+			expDelete:         true,
+			deleteUCInput:     deletemodel.NewDeleteProjectInput(1, "Name"),
+			deleteUCOutput:    deletemodel.NewDeleteProjectOutput(true),
+			deleteUCReturnErr: deleteerr.ErrProjectNotFound,
+
+			clientReturnErr: nil,
+
+			body: map[string]string{
+				"name": "Name",
+			},
+
+			expRespBody:   false,
+			expStatusCode: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			log := slog.New(slog.NewTextHandler(io.Discard, nil))
+
+			deleteUCMock := resthandlmocks.NewMockDeleteProjectUsecase(ctrl)
+			if tt.expDelete {
+				deleteUCMock.EXPECT().Execute(gomock.Any(), tt.deleteUCInput).
+					Return(tt.deleteUCOutput, tt.deleteUCReturnErr)
+			}
+
+			handl := NewHandler(log, nil, deleteUCMock)
+
+			client := resthandlmocks.NewMockSessionValidator(ctrl)
+
+			client.EXPECT().GetIdBySession(gomock.Any(), tt.sessionId).
+				Return(tt.userId, tt.clientReturnErr)
+
+			router := gin.New()
+			router.Use(middleware.GetSessionMiddleware(log))
+			router.Use(middleware.SessionAuthMiddleware(log, client, 10*time.Second))
+
+			router.DELETE("/test", handl.Delete)
+
+			b, err := json.Marshal(tt.body)
+			assert.NoError(t, err)
+
+			req, err := http.NewRequest(http.MethodDelete, "/test", bytes.NewReader(b))
+
+			c := &http.Cookie{
+				Name:  "sessionId",
+				Value: tt.sessionId,
+			}
+			req.AddCookie(c)
+
+			w := httptest.NewRecorder()
+
+			router.ServeHTTP(w, req)
+
+			var respBody struct {
+				IsDeleted bool `json:"is_deleted"`
+			}
+
+			assert.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
+			assert.Equal(t, tt.expRespBody, respBody.IsDeleted)
 			assert.Equal(t, tt.expStatusCode, w.Result().StatusCode)
 		})
 	}
