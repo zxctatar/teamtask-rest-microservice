@@ -12,8 +12,10 @@ import (
 	"projectservice/internal/transport/rest/middleware"
 	createerr "projectservice/internal/usecase/error/createproject"
 	deleteerr "projectservice/internal/usecase/error/deleteproject"
+	getallerr "projectservice/internal/usecase/error/getallprojects"
 	createmodel "projectservice/internal/usecase/models/createproject"
 	deletemodel "projectservice/internal/usecase/models/deleteproject"
+	getallmodel "projectservice/internal/usecase/models/getallprojects"
 	"strings"
 	"testing"
 	"time"
@@ -26,6 +28,7 @@ import (
 //go:generate mockgen -source=./../../../repository/sessionvalidator/session_validator.go -destination=./mocks/mock_session_validator.go -package=resthandlmocks
 //go:generate mockgen -source=./../../../usecase/interfaces/create_project.go -destination=./mocks/mock_create_project.go -package=resthandlmocks
 //go:generate mockgen -source=./../../../usecase/interfaces/delete_project.go -destination=./mocks/mock_delete_project.go -package=resthandlmocks
+//go:generate mockgen -source=./../../../usecase/interfaces/get_all_projects.go -destination=./mocks/mock_get_all_projects.go -package=resthandlmocks
 func TestRestHandler_Create(t *testing.T) {
 	tests := []struct {
 		testName string
@@ -314,6 +317,100 @@ func TestRestHandler_Delete(t *testing.T) {
 
 			assert.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
 			assert.Equal(t, tt.expRespBody, respBody.IsDeleted)
+			assert.Equal(t, tt.expStatusCode, w.Result().StatusCode)
+		})
+	}
+}
+
+func TestRestHandler_GetAll(t *testing.T) {
+	timeNow := time.Now().Round(0)
+
+	tests := []struct {
+		testName string
+
+		userId    uint32
+		sessionId string
+
+		ucInput     *getallmodel.GetAllProjectsInput
+		ucOutput    *getallmodel.GetAllProjectsOutput
+		ucReturnErr error
+
+		expBody       []*projectdomain.ProjectDomain
+		expStatusCode int
+	}{
+		{
+			testName: "Success",
+
+			userId:    1,
+			sessionId: "sessionId",
+
+			ucInput: getallmodel.NewGetAllProjectsInput(1),
+			ucOutput: getallmodel.NewGetAllProjectsOutput([]*projectdomain.ProjectDomain{
+				&projectdomain.ProjectDomain{Id: 1, OwnerId: 1, Name: "A", CreatedAt: timeNow},
+			}),
+			ucReturnErr: nil,
+
+			expBody: []*projectdomain.ProjectDomain{
+				&projectdomain.ProjectDomain{Id: 1, OwnerId: 1, Name: "A", CreatedAt: timeNow},
+			},
+			expStatusCode: http.StatusOK,
+		}, {
+			testName: "Project not found",
+
+			userId:    1,
+			sessionId: "sessionId",
+
+			ucInput:     getallmodel.NewGetAllProjectsInput(1),
+			ucOutput:    getallmodel.NewGetAllProjectsOutput([]*projectdomain.ProjectDomain{nil}),
+			ucReturnErr: getallerr.ErrProjectsNotFound,
+
+			expBody:       nil,
+			expStatusCode: http.StatusNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			log := slog.New(slog.NewTextHandler(io.Discard, nil))
+
+			getAllMock := resthandlmocks.NewMockGetAllProjectsUsecase(ctrl)
+			getAllMock.EXPECT().Execute(gomock.Any(), tt.ucInput).
+				Return(tt.ucOutput, tt.ucReturnErr)
+
+			handl := NewHandler(log, nil, nil, getAllMock)
+
+			client := resthandlmocks.NewMockSessionValidator(ctrl)
+			client.EXPECT().GetIdBySession(gomock.Any(), tt.sessionId).
+				Return(tt.userId, nil)
+
+			router := gin.New()
+			router.Use(middleware.GetSessionMiddleware(log))
+			router.Use(middleware.SessionAuthMiddleware(log, client, 10*time.Second))
+			router.GET("/test", handl.GetAll)
+
+			req, err := http.NewRequest(http.MethodGet, "/test", nil)
+			assert.NoError(t, err)
+
+			c := &http.Cookie{
+				Name:  "sessionId",
+				Value: tt.sessionId,
+			}
+
+			req.AddCookie(c)
+
+			w := httptest.NewRecorder()
+
+			router.ServeHTTP(w, req)
+
+			var respBody struct {
+				Projects []*projectdomain.ProjectDomain `json:"projects"`
+			}
+
+			assert.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
+			assert.Equal(t, tt.expBody, respBody.Projects)
 			assert.Equal(t, tt.expStatusCode, w.Result().StatusCode)
 		})
 	}
