@@ -34,11 +34,9 @@ func NewHandler(log *slog.Logger, createProjUC interfaces.CreateProjectUsecase, 
 func (h *RestHandler) Create(ctx *gin.Context) {
 	const op = "resthandler.Create"
 
-	var userId uint32
-	if val, exists := ctx.Get("userId"); exists {
-		userId = val.(uint32)
-	} else {
-		h.log.Error("failed to get userId")
+	userId := getUserId(ctx)
+	if userId == 0 {
+		h.log.Error("failed to get userId", slog.String("op", op))
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "internal server error",
 		})
@@ -101,11 +99,9 @@ func (h *RestHandler) Create(ctx *gin.Context) {
 func (h *RestHandler) Delete(ctx *gin.Context) {
 	const op = "resthandler.Delete"
 
-	var userId uint32
-	if val, exists := ctx.Get("userId"); exists {
-		userId = val.(uint32)
-	} else {
-		h.log.Error("failed to get userId")
+	userId := getUserId(ctx)
+	if userId == 0 {
+		h.log.Error("failed to get userId", slog.String("op", op))
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "internal server error",
 		})
@@ -167,4 +163,12 @@ func (h *RestHandler) Delete(ctx *gin.Context) {
 
 func (h *RestHandler) GetAll(ctx *gin.Context) {
 	panic("not implemented")
+}
+
+func getUserId(ctx *gin.Context) uint32 {
+	if val, exists := ctx.Get("userId"); exists {
+		return val.(uint32)
+	} else {
+		return 0
+	}
 }
