@@ -136,7 +136,7 @@ func TestRestHandler_Create(t *testing.T) {
 			client.EXPECT().GetIdBySession(gomock.Any(), tt.sessionId).
 				Return(tt.userId, nil)
 
-			handl := NewHandler(log, createUCMock, nil)
+			handl := NewHandler(log, createUCMock, nil, nil)
 
 			router := gin.New()
 			router.Use(middleware.GetSessionMiddleware(log))
@@ -280,7 +280,7 @@ func TestRestHandler_Delete(t *testing.T) {
 					Return(tt.deleteUCOutput, tt.deleteUCReturnErr)
 			}
 
-			handl := NewHandler(log, nil, deleteUCMock)
+			handl := NewHandler(log, nil, deleteUCMock, nil)
 
 			client := resthandlmocks.NewMockSessionValidator(ctrl)
 
