@@ -46,5 +46,7 @@ func (d *DeleteProjectUC) Execute(ctx context.Context, in *deletemodel.DeletePro
 		return deletemodel.NewDeleteProjectOutput(false), err
 	}
 
+	log.Info("project deleted")
+
 	return deletemodel.NewDeleteProjectOutput(true), nil
 }
