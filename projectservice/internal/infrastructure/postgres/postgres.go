@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	projectdomain "projectservice/internal/domain/project"
 	posmapper "projectservice/internal/infrastructure/postgres/mapper"
+	posmodels "projectservice/internal/infrastructure/postgres/models"
 	"projectservice/internal/repository/storage"
 
 	"github.com/lib/pq"
@@ -54,4 +55,37 @@ func (p *Postgres) Delete(ctx context.Context, proj *projectdomain.ProjectDomain
 	}
 
 	return nil
+}
+
+func (p *Postgres) GetAll(ctx context.Context, ownerId uint32) ([]*projectdomain.ProjectDomain, error) {
+	rows, err := p.db.QueryContext(ctx, QuerieGetAll, ownerId)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects []*posmodels.ProjectPosModel
+	for rows.Next() {
+		project := &posmodels.ProjectPosModel{}
+
+		err := rows.Scan(
+			&project.Id,
+			&project.OwnerId,
+			&project.Name,
+			&project.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		projects = append(projects, project)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(projects) == 0 {
+		return nil, storage.ErrNotFound
+	}
+
+	return posmapper.ModelsToDomain(projects), nil
 }
