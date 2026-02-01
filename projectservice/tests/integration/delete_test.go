@@ -1,0 +1,195 @@
+package integration
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+	"net/http/cookiejar"
+	"net/url"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func TestDelete_Success_Integration(t *testing.T) {
+	email, pass := registrationUser(t)
+	sessionId := loginUser(t, email, pass)
+
+	projName := uniqueProjectName()
+
+	createProject(t, sessionId, projName)
+
+	body := map[string]string{
+		"name": "Name",
+	}
+
+	resp := deleteGetResponse(t, sessionId, body)
+	defer resp.Body.Close()
+
+	var respBody struct {
+		IsDeleted bool `json:"is_deleted"`
+	}
+
+	expBody := true
+	expStatusCode := http.StatusOK
+
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+	require.Equal(t, expBody, respBody.IsDeleted)
+	require.Equal(t, expStatusCode, resp.StatusCode)
+}
+
+func TestDelete_MissingFieldName_Integration(t *testing.T) {
+	email, pass := registrationUser(t)
+	sessionId := loginUser(t, email, pass)
+
+	projName := uniqueProjectName()
+
+	createProject(t, sessionId, projName)
+
+	body := map[string]string{
+		"nam": "Name",
+	}
+
+	resp := deleteGetResponse(t, sessionId, body)
+	defer resp.Body.Close()
+
+	var respBody struct {
+		IsDeleted bool `json:"is_deleted"`
+	}
+
+	expBody := false
+	expStatusCode := http.StatusBadRequest
+
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+	require.Equal(t, expBody, respBody.IsDeleted)
+	require.Equal(t, expStatusCode, resp.StatusCode)
+}
+
+func TestDelete_InvalidName_Integration(t *testing.T) {
+	email, pass := registrationUser(t)
+	sessionId := loginUser(t, email, pass)
+
+	projName := uniqueProjectName()
+
+	createProject(t, sessionId, projName)
+
+	body := map[string]string{
+		"name": strings.Repeat(projName, 300),
+	}
+
+	resp := deleteGetResponse(t, sessionId, body)
+	defer resp.Body.Close()
+
+	var respBody struct {
+		IsDeleted bool `json:"is_deleted"`
+	}
+
+	expBody := false
+	expStatusCode := http.StatusBadRequest
+
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+	require.Equal(t, expBody, respBody.IsDeleted)
+	require.Equal(t, expStatusCode, resp.StatusCode)
+}
+
+func TestDelete_NotFound_Integration(t *testing.T) {
+	email, pass := registrationUser(t)
+	sessionId := loginUser(t, email, pass)
+
+	body := map[string]string{
+		"name": "Name",
+	}
+
+	resp := deleteGetResponse(t, sessionId, body)
+	defer resp.Body.Close()
+
+	var respBody struct {
+		IsDeleted bool `json:"is_deleted"`
+	}
+
+	expBody := false
+	expStatusCode := http.StatusNotFound
+
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+	require.Equal(t, expBody, respBody.IsDeleted)
+	require.Equal(t, expStatusCode, resp.StatusCode)
+}
+
+func deleteGetResponse(t *testing.T, sessionId string, body map[string]string) *http.Response {
+	b, err := json.Marshal(body)
+	require.NoError(t, err)
+
+	jar, err := cookiejar.New(nil)
+	require.NoError(t, err)
+
+	cookies := []*http.Cookie{}
+	cookie := &http.Cookie{
+		Name:  "sessionId",
+		Value: sessionId,
+	}
+	cookies = append(cookies, cookie)
+
+	u, err := url.Parse(urlDelete)
+	require.NoError(t, err)
+
+	jar.SetCookies(u, cookies)
+
+	client := http.Client{
+		Jar: jar,
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, urlDelete, bytes.NewReader(b))
+	require.NoError(t, err)
+
+	resp, err := client.Do(req)
+	require.NoError(t, err)
+
+	return resp
+}
+
+func createProject(t *testing.T, sessionId string, projName string) {
+	body := map[string]string{
+		"name": projName,
+	}
+
+	b, err := json.Marshal(body)
+	require.NoError(t, err)
+
+	jar, err := cookiejar.New(nil)
+	require.NoError(t, err)
+
+	cookies := []*http.Cookie{}
+	cookie := &http.Cookie{
+		Name:  "sessionId",
+		Value: sessionId,
+	}
+	cookies = append(cookies, cookie)
+
+	u, err := url.Parse(urlCreate)
+	require.NoError(t, err)
+
+	jar.SetCookies(u, cookies)
+
+	client := http.Client{
+		Jar: jar,
+	}
+
+	req, err := http.NewRequest(http.MethodPost, urlCreate, bytes.NewReader(b))
+	require.NoError(t, err)
+
+	resp, err := client.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	var respBody struct {
+		IsCreated bool `json:"is_created"`
+	}
+
+	expBody := true
+	expStatusCode := http.StatusOK
+
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+	require.Equal(t, expBody, respBody.IsCreated)
+	require.Equal(t, expStatusCode, resp.StatusCode)
+}
