@@ -17,9 +17,9 @@ func mustLoadRestServer(cfg *config.Config, log *slog.Logger, handl *resthandler
 	gin.SetMode(cfg.RestConf.Mode)
 	router := gin.New()
 	router.Use(gin.Recovery())
-	router.Use(middleware.TimeoutMiddleware(cfg.RestConf.RequestTimeout))
 	router.Use(middleware.GetSessionMiddleware(log))
 	router.Use(middleware.SessionAuthMiddleware(log, sessionValid, cfg.ConnectionsConf.UserServConnConf.ResponseTimeout))
+	router.Use(middleware.TimeoutMiddleware(cfg.RestConf.RequestTimeout))
 
 	router.POST("/task/create", handl.Create)
 	router.DELETE("task/delete", handl.Delete)
