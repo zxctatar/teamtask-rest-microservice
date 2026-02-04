@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"io"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,22 +13,22 @@ import (
 
 func TestTimeout(t *testing.T) {
 	tests := []struct {
-		name   string
-		timeMs time.Duration
-		status int
-		body   string
+		name    string
+		timeMs  time.Duration
+		status  int
+		expBody string
 	}{
 		{
-			name:   "good test",
-			timeMs: 1 * time.Millisecond,
-			status: http.StatusOK,
-			body:   "\"ok\"",
+			name:    "good test",
+			timeMs:  1 * time.Millisecond,
+			status:  http.StatusOK,
+			expBody: "ok",
 		},
 		{
-			name:   "timeout test",
-			timeMs: 3 * time.Millisecond,
-			status: http.StatusRequestTimeout,
-			body:   "\"timeout\"",
+			name:    "timeout test",
+			timeMs:  3 * time.Millisecond,
+			status:  http.StatusRequestTimeout,
+			expBody: "timeout",
 		},
 	}
 
@@ -49,10 +49,10 @@ func TestTimeout(t *testing.T) {
 			assert.NoError(t, err)
 			defer resp.Body.Close()
 
-			body, err := io.ReadAll(resp.Body)
-			assert.NoError(t, err)
+			var respBody string
 
-			assert.Equal(t, tt.body, string(body))
+			assert.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+			assert.Equal(t, tt.expBody, respBody)
 			assert.Equal(t, tt.status, resp.StatusCode)
 		})
 	}
