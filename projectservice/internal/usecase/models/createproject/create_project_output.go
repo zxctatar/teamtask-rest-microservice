@@ -1,11 +1,11 @@
 package createmodel
 
 type CreateProjectOutput struct {
-	IsCreated bool
+	ProjectId uint32
 }
 
-func NewCreateProjectOutput(isCreated bool) *CreateProjectOutput {
+func NewCreateProjectOutput(projectId uint32) *CreateProjectOutput {
 	return &CreateProjectOutput{
-		IsCreated: isCreated,
+		ProjectId: projectId,
 	}
 }
