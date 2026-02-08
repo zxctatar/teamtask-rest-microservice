@@ -4,12 +4,10 @@ import (
 	"context"
 	"io"
 	"log/slog"
-	projectdomain "projectservice/internal/domain/project"
 	"projectservice/internal/repository/storage"
 	deleteerr "projectservice/internal/usecase/error/deleteproject"
 	deletemocks "projectservice/internal/usecase/implementations/deleteproject/mocks"
 	deletemodel "projectservice/internal/usecase/models/deleteproject"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,7 +20,7 @@ func TestDeleteProject(t *testing.T) {
 		testName string
 
 		expStorage       bool
-		storageInput     *projectdomain.ProjectDomain
+		storageInput     uint32
 		storageReturnErr error
 
 		deleteInput *deletemodel.DeleteProjectInput
@@ -34,32 +32,32 @@ func TestDeleteProject(t *testing.T) {
 			testName: "Success",
 
 			expStorage:       true,
-			storageInput:     &projectdomain.ProjectDomain{OwnerId: 1, Name: "Name"},
+			storageInput:     1,
 			storageReturnErr: nil,
 
-			deleteInput: deletemodel.NewDeleteProjectInput(1, "Name"),
+			deleteInput: deletemodel.NewDeleteProjectInput(1),
 
 			expErr:    nil,
 			expOutput: deletemodel.NewDeleteProjectOutput(true),
 		}, {
-			testName: "Invalid domain",
+			testName: "Invalid project id",
 
 			expStorage:       false,
-			storageInput:     &projectdomain.ProjectDomain{OwnerId: 1, Name: strings.Repeat("Name", 300)},
-			storageReturnErr: nil,
+			storageInput:     0,
+			storageReturnErr: storage.ErrNotFound,
 
-			deleteInput: deletemodel.NewDeleteProjectInput(1, strings.Repeat("Name", 300)),
+			deleteInput: deletemodel.NewDeleteProjectInput(0),
 
-			expErr:    projectdomain.ErrInvalidName,
+			expErr:    deleteerr.ErrInvalidProjectId,
 			expOutput: deletemodel.NewDeleteProjectOutput(false),
 		}, {
 			testName: "Not found",
 
 			expStorage:       true,
-			storageInput:     &projectdomain.ProjectDomain{OwnerId: 1, Name: "Name"},
+			storageInput:     1,
 			storageReturnErr: storage.ErrNotFound,
 
-			deleteInput: deletemodel.NewDeleteProjectInput(1, "Name"),
+			deleteInput: deletemodel.NewDeleteProjectInput(1),
 
 			expErr:    deleteerr.ErrProjectNotFound,
 			expOutput: deletemodel.NewDeleteProjectOutput(false),
