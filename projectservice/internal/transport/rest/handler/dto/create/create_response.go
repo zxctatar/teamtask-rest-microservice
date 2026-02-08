@@ -1,5 +1,5 @@
 package createdto
 
 type CreateResponse struct {
-	IsCreated bool `json:"is_created" binding:"required"`
+	ProjectId uint32 `json:"project_id" binding:"required"`
 }

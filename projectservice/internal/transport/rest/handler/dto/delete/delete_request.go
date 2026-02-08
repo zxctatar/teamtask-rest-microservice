@@ -1,5 +1,5 @@
 package deletedto
 
 type DeleteRequest struct {
-	Name string `json:"name" binding:"required"`
+	ProjectId uint32 `json:"project_id" binding:"required"`
 }
