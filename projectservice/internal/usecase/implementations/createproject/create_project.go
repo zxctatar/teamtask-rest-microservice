@@ -17,10 +17,10 @@ var (
 type CreateProjectUC struct {
 	log *slog.Logger
 
-	stor storage.Storage
+	stor storage.StorageRepo
 }
 
-func NewCreateProjectUC(log *slog.Logger, stor storage.Storage) *CreateProjectUC {
+func NewCreateProjectUC(log *slog.Logger, stor storage.StorageRepo) *CreateProjectUC {
 	return &CreateProjectUC{
 		log:  log,
 		stor: stor,

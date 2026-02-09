@@ -14,7 +14,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-//go:generate mockgen -source=./../../../repository/storage/storage.go -destination=./mocks/mock_storage.go -package=deletemocks
+//go:generate mockgen -source=./../../../repository/storage/storagerepo.go -destination=./mocks/mock_storage.go -package=deletemocks
 func TestDeleteProject(t *testing.T) {
 	tests := []struct {
 		testName string
@@ -75,7 +75,7 @@ func TestDeleteProject(t *testing.T) {
 
 			log := slog.New(slog.NewTextHandler(io.Discard, nil))
 
-			storageMock := deletemocks.NewMockStorage(ctrl)
+			storageMock := deletemocks.NewMockStorageRepo(ctrl)
 			if tt.expStorage {
 				storageMock.EXPECT().Delete(gomock.Any(), tt.storageInputOwnerId, tt.storageInputProjId).
 					Return(tt.storageReturnErr)

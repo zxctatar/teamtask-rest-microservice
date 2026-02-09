@@ -12,10 +12,10 @@ import (
 type GetAllProjectsUC struct {
 	log *slog.Logger
 
-	stor storage.Storage
+	stor storage.StorageRepo
 }
 
-func NewGetAllProjectsUC(log *slog.Logger, stor storage.Storage) *GetAllProjectsUC {
+func NewGetAllProjectsUC(log *slog.Logger, stor storage.StorageRepo) *GetAllProjectsUC {
 	return &GetAllProjectsUC{
 		log:  log,
 		stor: stor,

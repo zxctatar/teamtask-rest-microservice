@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-//go:generate mockgen -source=./../../../repository/storage/storage.go -destination=./mocks/mock_storage.go -package=getallmocks
+//go:generate mockgen -source=./../../../repository/storage/storagerepo.go -destination=./mocks/mock_storage.go -package=getallmocks
 func TestGetAllProjects(t *testing.T) {
 	timeNow := time.Now()
 
@@ -68,7 +68,7 @@ func TestGetAllProjects(t *testing.T) {
 
 			log := slog.New(slog.NewTextHandler(io.Discard, nil))
 
-			storageMock := getallmocks.NewMockStorage(ctrl)
+			storageMock := getallmocks.NewMockStorageRepo(ctrl)
 			storageMock.EXPECT().GetAll(gomock.Any(), tt.storageInput).
 				Return(tt.storageOutput, tt.storageReturnErr)
 

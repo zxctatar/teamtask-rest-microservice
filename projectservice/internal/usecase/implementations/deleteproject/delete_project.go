@@ -12,10 +12,10 @@ import (
 type DeleteProjectUC struct {
 	log *slog.Logger
 
-	stor storage.Storage
+	stor storage.StorageRepo
 }
 
-func NewDeleteProjectUC(log *slog.Logger, stor storage.Storage) *DeleteProjectUC {
+func NewDeleteProjectUC(log *slog.Logger, stor storage.StorageRepo) *DeleteProjectUC {
 	return &DeleteProjectUC{
 		log:  log,
 		stor: stor,

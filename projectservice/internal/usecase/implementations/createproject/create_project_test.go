@@ -16,7 +16,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-//go:generate mockgen -source=./../../../repository/storage/storage.go -destination=./mocks/mock_storage.go -package=createmocks
+//go:generate mockgen -source=./../../../repository/storage/storagerepo.go -destination=./mocks/mock_storage.go -package=createmocks
 func TestCreateProject(t *testing.T) {
 	tests := []struct {
 		testName string
@@ -75,7 +75,7 @@ func TestCreateProject(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			storageMock := createmocks.NewMockStorage(ctrl)
+			storageMock := createmocks.NewMockStorageRepo(ctrl)
 			if tt.expStorage {
 				storageMock.EXPECT().Save(gomock.Any(), tt.storageInpit).
 					Return(tt.storageReturnId, tt.storageReturnErr)
