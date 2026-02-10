@@ -5,23 +5,23 @@ import (
 	"log/slog"
 	taskdomain "taskservice/internal/domain/task"
 	"taskservice/internal/repository/storage"
-	createmodel "taskservice/internal/usecase/models/create"
+	createmodel "taskservice/internal/usecase/models/createtask"
 )
 
-type CreateUC struct {
+type CreateTaskUC struct {
 	log *slog.Logger
 
 	stor storage.StorageRepo
 }
 
-func NewCreateUC(log *slog.Logger, stor storage.StorageRepo) *CreateUC {
-	return &CreateUC{
+func NewCreateUC(log *slog.Logger, stor storage.StorageRepo) *CreateTaskUC {
+	return &CreateTaskUC{
 		log:  log,
 		stor: stor,
 	}
 }
 
-func (c *CreateUC) Execute(ctx context.Context, in *createmodel.CreateInput) (*createmodel.CreateOutput, error) {
+func (c *CreateTaskUC) Execute(ctx context.Context, in *createmodel.CreateTaskInput) (*createmodel.CreateTaskOutput, error) {
 	const op = "createuc.Execute"
 
 	log := c.log.With(slog.String("op", op), slog.Int("projectId", int(in.ProjectId)))
