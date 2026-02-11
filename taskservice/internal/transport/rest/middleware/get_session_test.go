@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetSessionMiddleware_Success(t *testing.T) {
@@ -27,7 +27,7 @@ func TestGetSessionMiddleware_Success(t *testing.T) {
 	defer serv.Close()
 
 	req, err := http.NewRequest(http.MethodGet, serv.URL+"/test", nil)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	req.AddCookie(&http.Cookie{
 		Name:  "sessionId",
@@ -40,9 +40,9 @@ func TestGetSessionMiddleware_Success(t *testing.T) {
 
 	var str string
 
-	assert.NoError(t, json.NewDecoder(w.Body).Decode(&str))
-	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
-	assert.Equal(t, "ok", str)
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&str))
+	require.Equal(t, http.StatusOK, w.Result().StatusCode)
+	require.Equal(t, "ok", str)
 }
 
 func TestGetSessionMiddleware_WithoutCookie(t *testing.T) {
@@ -60,7 +60,7 @@ func TestGetSessionMiddleware_WithoutCookie(t *testing.T) {
 	defer serv.Close()
 
 	resp, err := http.Get(serv.URL + "/test")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	defer resp.Body.Close()
 
 	var respBody struct {
@@ -69,7 +69,7 @@ func TestGetSessionMiddleware_WithoutCookie(t *testing.T) {
 
 	expBody := "needed cookie with sessionId"
 
-	assert.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
-	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-	assert.Equal(t, expBody, respBody.Err)
+	require.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+	require.Equal(t, expBody, respBody.Err)
 }

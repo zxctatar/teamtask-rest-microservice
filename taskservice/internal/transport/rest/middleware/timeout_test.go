@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTimeout(t *testing.T) {
@@ -46,14 +46,14 @@ func TestTimeout(t *testing.T) {
 			defer serv.Close()
 
 			resp, err := http.Get(serv.URL + "/test")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer resp.Body.Close()
 
 			var respBody string
 
-			assert.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
-			assert.Equal(t, tt.expBody, respBody)
-			assert.Equal(t, tt.status, resp.StatusCode)
+			require.NoError(t, json.NewDecoder(resp.Body).Decode(&respBody))
+			require.Equal(t, tt.expBody, respBody)
+			require.Equal(t, tt.status, resp.StatusCode)
 		})
 	}
 }
