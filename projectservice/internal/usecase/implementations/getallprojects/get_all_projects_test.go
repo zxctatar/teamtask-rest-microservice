@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -75,8 +75,8 @@ func TestGetAllProjects(t *testing.T) {
 			handl := NewGetAllProjectsUC(log, storageMock)
 
 			out, err := handl.Execute(context.Background(), tt.in)
-			assert.Equal(t, tt.expErr, err)
-			assert.Equal(t, tt.expOut, out)
+			require.Equal(t, tt.expErr, err)
+			require.Equal(t, tt.expOut, out)
 		})
 	}
 }

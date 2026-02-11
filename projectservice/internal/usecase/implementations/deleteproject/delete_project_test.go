@@ -10,7 +10,7 @@ import (
 	deletemodel "projectservice/internal/usecase/models/deleteproject"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -84,8 +84,8 @@ func TestDeleteProject(t *testing.T) {
 			deleteUC := NewDeleteProjectUC(log, storageMock)
 
 			out, err := deleteUC.Execute(context.Background(), tt.deleteInput)
-			assert.Equal(t, tt.expErr, err)
-			assert.Equal(t, tt.expOutput, out)
+			require.Equal(t, tt.expErr, err)
+			require.Equal(t, tt.expOutput, out)
 		})
 	}
 }

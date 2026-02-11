@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -72,13 +72,13 @@ func TestSessionAuthMiddleware(t *testing.T) {
 			router.Use(SessionAuthMiddleware(log, sessValidMock, 15*time.Second))
 			router.GET("/test", func(ctx *gin.Context) {
 				userId, ok := ctx.Get("userId")
-				assert.True(t, ok)
-				assert.Equal(t, tt.sessOutput, userId)
+				require.True(t, ok)
+				require.Equal(t, tt.sessOutput, userId)
 				ctx.JSON(http.StatusOK, "ok")
 			})
 
 			req, err := http.NewRequest(http.MethodGet, "/test", nil)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			req.AddCookie(&http.Cookie{
 				Name:  "sessionId",
@@ -89,7 +89,7 @@ func TestSessionAuthMiddleware(t *testing.T) {
 
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, tt.expCode, w.Result().StatusCode)
+			require.Equal(t, tt.expCode, w.Result().StatusCode)
 		})
 	}
 }

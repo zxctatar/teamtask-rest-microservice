@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -149,7 +149,7 @@ func TestRestHandler_Create(t *testing.T) {
 			b, err := json.Marshal(tt.body)
 
 			req, err := http.NewRequest(http.MethodPost, "/test", bytes.NewReader(b))
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			c := &http.Cookie{
 				Name:  "sessionId",
@@ -165,9 +165,9 @@ func TestRestHandler_Create(t *testing.T) {
 				ProjectId uint32 `json:"project_id"`
 			}
 
-			assert.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
-			assert.Equal(t, tt.expResp, respBody.ProjectId)
-			assert.Equal(t, tt.expStatusCode, w.Result().StatusCode)
+			require.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
+			require.Equal(t, tt.expResp, respBody.ProjectId)
+			require.Equal(t, tt.expStatusCode, w.Result().StatusCode)
 		})
 	}
 }
@@ -278,7 +278,7 @@ func TestRestHandler_Delete(t *testing.T) {
 			router.DELETE("/test", handl.Delete)
 
 			b, err := json.Marshal(tt.body)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			req, err := http.NewRequest(http.MethodDelete, "/test", bytes.NewReader(b))
 
@@ -296,9 +296,9 @@ func TestRestHandler_Delete(t *testing.T) {
 				IsDeleted bool `json:"is_deleted"`
 			}
 
-			assert.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
-			assert.Equal(t, tt.expRespBody, respBody.IsDeleted)
-			assert.Equal(t, tt.expStatusCode, w.Result().StatusCode)
+			require.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
+			require.Equal(t, tt.expRespBody, respBody.IsDeleted)
+			require.Equal(t, tt.expStatusCode, w.Result().StatusCode)
 		})
 	}
 }
@@ -373,7 +373,7 @@ func TestRestHandler_GetAll(t *testing.T) {
 			router.GET("/test", handl.GetAll)
 
 			req, err := http.NewRequest(http.MethodGet, "/test", nil)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			c := &http.Cookie{
 				Name:  "sessionId",
@@ -390,9 +390,9 @@ func TestRestHandler_GetAll(t *testing.T) {
 				Projects []*projectdomain.ProjectDomain `json:"projects"`
 			}
 
-			assert.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
-			assert.Equal(t, tt.expBody, respBody.Projects)
-			assert.Equal(t, tt.expStatusCode, w.Result().StatusCode)
+			require.NoError(t, json.NewDecoder(w.Body).Decode(&respBody))
+			require.Equal(t, tt.expBody, respBody.Projects)
+			require.Equal(t, tt.expStatusCode, w.Result().StatusCode)
 		})
 	}
 }

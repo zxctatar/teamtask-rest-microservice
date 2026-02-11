@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -86,8 +86,8 @@ func TestCreateProject(t *testing.T) {
 			createUC := NewCreateProjectUC(log, storageMock)
 
 			out, err := createUC.Execute(context.Background(), tt.createInput)
-			assert.Equal(t, tt.expErr, err)
-			assert.Equal(t, tt.expOut, out)
+			require.Equal(t, tt.expErr, err)
+			require.Equal(t, tt.expOut, out)
 		})
 	}
 }

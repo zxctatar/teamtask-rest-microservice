@@ -10,7 +10,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/lib/pq"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPostgres_Save(t *testing.T) {
@@ -48,7 +48,7 @@ func TestPostgres_Save(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			db, mock, err := sqlmock.New()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer db.Close()
 
 			mock.ExpectQuery(regexp.QuoteMeta(QuerieSave)).
@@ -58,8 +58,8 @@ func TestPostgres_Save(t *testing.T) {
 
 			postgres := NewPostgres(db)
 			id, err := postgres.Save(context.Background(), tt.proj)
-			assert.Equal(t, tt.expErr, err)
-			assert.Equal(t, tt.expId, id)
+			require.Equal(t, tt.expErr, err)
+			require.Equal(t, tt.expId, id)
 		})
 	}
 }
@@ -99,7 +99,7 @@ func TestPostgres_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			db, mock, err := sqlmock.New()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer db.Close()
 
 			mock.ExpectExec(regexp.QuoteMeta(QuerieDelete)).
@@ -109,7 +109,7 @@ func TestPostgres_Delete(t *testing.T) {
 
 			postgres := NewPostgres(db)
 			err = postgres.Delete(context.Background(), tt.projectId, tt.ownerId)
-			assert.Equal(t, tt.expErr, err)
+			require.Equal(t, tt.expErr, err)
 		})
 	}
 }
@@ -179,7 +179,7 @@ func TestPostgres_GetAll(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			db, mock, err := sqlmock.New()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer db.Close()
 
 			mock.ExpectQuery(regexp.QuoteMeta(QuerieGetAll)).
@@ -190,8 +190,8 @@ func TestPostgres_GetAll(t *testing.T) {
 			postgres := NewPostgres(db)
 
 			projects, err := postgres.GetAll(context.Background(), tt.ownerId)
-			assert.Equal(t, tt.expErr, err)
-			assert.Equal(t, tt.expOutput, projects)
+			require.Equal(t, tt.expErr, err)
+			require.Equal(t, tt.expOutput, projects)
 		})
 	}
 }
