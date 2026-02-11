@@ -12,7 +12,7 @@ import (
 	logmocks "userservice/internal/usecase/implementations/login/mocks"
 	logmodel "userservice/internal/usecase/models/login"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -158,8 +158,8 @@ func TestLogin(t *testing.T) {
 
 			logUC := NewLoginUserUC(log, storageMock, passHasherMock, sessionMock, idgen)
 			lo, err := logUC.Execute(context.Background(), tt.loginInput)
-			assert.ErrorIs(t, err, tt.expLoginErr)
-			assert.Equal(t, tt.expLoginOutput, lo)
+			require.ErrorIs(t, err, tt.expLoginErr)
+			require.Equal(t, tt.expLoginOutput, lo)
 		})
 	}
 }

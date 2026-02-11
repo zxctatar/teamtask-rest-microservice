@@ -16,7 +16,7 @@ import (
 	regmodel "userservice/internal/usecase/models/registration"
 
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -119,12 +119,12 @@ func TestRestHandler_Registration(t *testing.T) {
 			defer serv.Close()
 
 			rest, err := http.Post(serv.URL+"/test", "application/json", bytes.NewReader(tt.body))
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer rest.Body.Close()
 
 			data, err := io.ReadAll(rest.Body)
-			assert.Equal(t, tt.expStatus, rest.StatusCode)
-			assert.Equal(t, tt.expRes, data)
+			require.Equal(t, tt.expStatus, rest.StatusCode)
+			require.Equal(t, tt.expRes, data)
 		})
 	}
 }
@@ -236,11 +236,11 @@ func TestRestHandler_Login(t *testing.T) {
 
 			resp, err := http.Post(serv.URL+"/test", "application/json", bytes.NewReader(tt.reqBody))
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			body, err := io.ReadAll(resp.Body)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expStatusCode, resp.StatusCode)
-			assert.Equal(t, tt.expBody, body)
+			require.NoError(t, err)
+			require.Equal(t, tt.expStatusCode, resp.StatusCode)
+			require.Equal(t, tt.expBody, body)
 		})
 	}
 }

@@ -9,7 +9,7 @@ import (
 	storagerepo "userservice/internal/repository/storage"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPostgres_FindByEmail(t *testing.T) {
@@ -58,7 +58,7 @@ func TestPostgres_FindByEmail(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			db, mock, err := sqlmock.New()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer db.Close()
 
 			if tt.mockErr != nil {
@@ -74,8 +74,8 @@ func TestPostgres_FindByEmail(t *testing.T) {
 			repo := NewPostgres(db)
 			ud, err := repo.FindByEmail(context.Background(), tt.email)
 
-			assert.ErrorIs(t, tt.expErr, err)
-			assert.Equal(t, tt.expUser, ud)
+			require.ErrorIs(t, tt.expErr, err)
+			require.Equal(t, tt.expUser, ud)
 		})
 	}
 }
@@ -106,7 +106,7 @@ func TestPostgres_Save(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			db, mock, err := sqlmock.New()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer db.Close()
 
 			mock.ExpectQuery(regexp.QuoteMeta(QuerySaveUser)).
@@ -116,8 +116,8 @@ func TestPostgres_Save(t *testing.T) {
 
 			repo := NewPostgres(db)
 			id, err := repo.Save(context.Background(), &tt.user)
-			assert.ErrorIs(t, tt.expErr, err)
-			assert.Equal(t, tt.expId, id)
+			require.ErrorIs(t, tt.expErr, err)
+			require.Equal(t, tt.expId, id)
 		})
 	}
 }

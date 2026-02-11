@@ -11,7 +11,7 @@ import (
 	regmocks "userservice/internal/usecase/implementations/registration/mocks"
 	regmodel "userservice/internal/usecase/models/registration"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -134,8 +134,8 @@ func TestRegUser(t *testing.T) {
 			regUC := NewRegUserUC(log, storMock, hasherMock)
 
 			out, err := regUC.Execute(context.Background(), &tt.regUserInput)
-			assert.ErrorIs(t, tt.regUserExpectErr, err)
-			assert.Equal(t, tt.regUserExpectOutput.IsRegistered, out.IsRegistered)
+			require.ErrorIs(t, tt.regUserExpectErr, err)
+			require.Equal(t, tt.regUserExpectOutput.IsRegistered, out.IsRegistered)
 		})
 	}
 }

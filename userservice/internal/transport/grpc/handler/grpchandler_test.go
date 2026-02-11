@@ -10,7 +10,7 @@ import (
 	authmodel "userservice/internal/usecase/models/authenticate"
 	userservicev1 "userservice/proto/userservice"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -76,8 +76,8 @@ func TestGRPCHandler(t *testing.T) {
 
 			grpcHandl := NewGRPCHandler(log, authUCMock)
 			res, err := grpcHandl.GetIdBySession(context.Background(), tt.handlReq)
-			assert.ErrorIs(t, err, tt.expErr)
-			assert.Equal(t, tt.expOutput, res)
+			require.ErrorIs(t, err, tt.expErr)
+			require.Equal(t, tt.expOutput, res)
 		})
 	}
 }

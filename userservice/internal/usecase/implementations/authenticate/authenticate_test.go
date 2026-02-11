@@ -10,7 +10,7 @@ import (
 	authmocks "userservice/internal/usecase/implementations/authenticate/mocks"
 	authmodel "userservice/internal/usecase/models/authenticate"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
@@ -64,8 +64,8 @@ func TestAuthenticate(t *testing.T) {
 			auth := NewGetUserIDBySessionUC(log, sessionMock)
 
 			out, err := auth.Execute(context.Background(), tt.authInput)
-			assert.Equal(t, tt.expErr, err)
-			assert.Equal(t, tt.expOutput, out)
+			require.Equal(t, tt.expErr, err)
+			require.Equal(t, tt.expOutput, out)
 		})
 	}
 }
