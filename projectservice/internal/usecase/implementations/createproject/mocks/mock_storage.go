@@ -84,3 +84,17 @@ func (mr *MockStorageRepoMockRecorder) Save(ctx, proj any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockStorageRepo)(nil).Save), ctx, proj)
 }
+
+// UpdateName mocks base method.
+func (m *MockStorageRepo) UpdateName(ctx context.Context, ownerId, projectId uint32, newName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateName", ctx, ownerId, projectId, newName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateName indicates an expected call of UpdateName.
+func (mr *MockStorageRepoMockRecorder) UpdateName(ctx, ownerId, projectId, newName any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateName", reflect.TypeOf((*MockStorageRepo)(nil).UpdateName), ctx, ownerId, projectId, newName)
+}
