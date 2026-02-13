@@ -38,7 +38,7 @@ func (p *Postgres) Save(ctx context.Context, proj *projectdomain.ProjectDomain) 
 	)
 
 	if err != nil {
-		var pqErr pq.Error
+		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			if pqErr.Code == "23505" {
 				return invalidId, storage.ErrAlreadyExists
@@ -104,7 +104,7 @@ func (p *Postgres) GetAll(ctx context.Context, ownerId uint32) ([]*projectdomain
 func (p *Postgres) UpdateName(ctx context.Context, ownerId uint32, projectId uint32, newName string) error {
 	res, err := p.db.ExecContext(ctx, QuerieUpdateName, newName, ownerId, projectId)
 	if err != nil {
-		var pqErr pq.Error
+		var pqErr *pq.Error
 		if errors.As(err, &pqErr) {
 			if pqErr.Code == "23505" {
 				return storage.ErrAlreadyExists
